@@ -1,0 +1,24 @@
+{
+  "name": "flowlang",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FlowLang monorepo",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run -ws build",
+    "dev": "npm run -ws dev",
+    "test": "npm run -ws test",
+    "lint": "npm run -ws lint",
+    "flow": "node packages/cli/dist/index.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "eslint": "^9.9.0",
+    "@eslint/js": "^9.9.0",
+    "prettier": "^3.3.3",
+    "vitest": "^2.0.5",
+    "tsx": "^4.17.0"
+  }
+}

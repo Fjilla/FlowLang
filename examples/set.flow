@@ -1,0 +1,3 @@
+when app starts
+  set greeting to "Hello from FlowLang"
+  show greeting

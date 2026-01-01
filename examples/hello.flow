@@ -1,0 +1,5 @@
+when user logs in
+  if time is after 22:00
+    show "Good evening"
+  else
+    show "Hello"
