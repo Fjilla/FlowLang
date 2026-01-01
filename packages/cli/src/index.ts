@@ -10,7 +10,8 @@ function usage(): void {
 
 Usage:
   flow parse <file.flow>   Parse a .flow file and print the AST as JSON
-  flow run <file.flow>     Run a .flow file (v0.1: runs all when blocks once)
+  flow run <file.flow>     Run a .flow file (v0.2: runs all when blocks once)
+  flow routes <file.flow>  Print only route plans as JSON
   flow version             Print version
 `);
 }
@@ -29,7 +30,7 @@ async function main(): Promise<void> {
   }
 
   if (cmd === 'version') {
-    console.log('0.1.0');
+    console.log('0.2.0');
     return;
   }
 
@@ -42,6 +43,20 @@ async function main(): Promise<void> {
     const input = readFile(file);
     const program = parseFlow(input);
     console.log(JSON.stringify(program, null, 2));
+    return;
+  }
+
+
+  if (cmd === 'routes') {
+    if (!file) {
+      console.error('Missing file path.');
+      usage();
+      process.exit(1);
+    }
+    const input = readFile(file);
+    const program = parseFlow(input);
+    const res = run(program, { vars: {} });
+    console.log(JSON.stringify(res.routes, null, 2));
     return;
   }
 

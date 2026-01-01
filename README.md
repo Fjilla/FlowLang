@@ -45,6 +45,24 @@ npm run flow -- parse examples/hello.flow
 npm run flow -- run examples/hello.flow
 ```
 
+
+## Route DSL (v0.2)
+FlowLang can describe routing intents in a simple, structured way.
+
+```flow
+route delivery
+  from "Warehouse A"
+  to "Customer B"
+  prefer shortest_time
+  avoid tolls
+  max stops 6
+```
+
+Run:
+```bash
+npm run flow -- routes examples/route.flow
+```
+
 ## Development
 ```bash
 npm run dev
@@ -54,7 +72,7 @@ npm run lint
 
 ## Roadmap
 - v0.1: parser + CLI + minimal runtime ✅
-- v0.2: route DSL + VS Code syntax highlighting
+- v0.2: Route DSL and routes output ✅
 - v0.3: richer expressions and plugin system
 
 ## License

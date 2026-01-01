@@ -19,8 +19,10 @@ describe('runtime', () => {
     };
 
     const out: unknown[] = [];
-    run(program, { vars: {}, onShow: (v) => out.push(v) });
+    const res = run(program, { vars: {}, onShow: (v) => out.push(v) });
 
     expect(out).toEqual(['Hi']);
+    expect(res.vars.greeting).toBe('Hi');
+    expect(res.routes).toEqual([]);
   });
 });

@@ -3,7 +3,7 @@ export type Program = {
   body: Statement[];
 };
 
-export type Statement = WhenStatement | IfStatement | ShowStatement | SetStatement;
+export type Statement = WhenStatement | IfStatement | ShowStatement | SetStatement | RouteStatement;
 
 export type WhenStatement = {
   type: 'When';

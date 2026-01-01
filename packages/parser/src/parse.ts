@@ -13,6 +13,9 @@ import {
   TimeLiteral,
   BinaryExpression,
   BinaryOp,
+  RouteStatement,
+  RoutePrefer,
+  RouteAvoid,
   ParseError,
   unquote,
   isQuotedString,
@@ -67,6 +70,9 @@ function parseStatement(lines: LineToken[], cur: Cursor, indent: number): Statem
   }
   if (text.toLowerCase().startsWith('set ')) {
     return parseSet(lines, cur);
+  }
+  if (text.toLowerCase().startsWith('route ')) {
+    return parseRoute(lines, cur, indent);
   }
 
   throw new ParseError(`Unknown statement: "${text}"`, t.line);
@@ -150,6 +156,111 @@ function parseSet(lines: LineToken[], cur: Cursor): SetStatement {
   const exprText = m[2]!.trim();
   cur.i++;
   return { type: 'Set', name, value: parseExpression(exprText, t.line) };
+}
+
+function parseRoute(lines: LineToken[], cur: Cursor, indent: number): RouteStatement {
+  const t = lines[cur.i]!;
+  const m = t.text.match(/^route\s+([a-zA-Z_][a-zA-Z0-9_]*)$/i);
+  if (!m) throw new ParseError('Invalid route syntax. Use: route <name>', t.line);
+  const name = m[1]!;
+  cur.i++;
+
+  const next = lines[cur.i];
+  if (!next || next.indent <= indent) {
+    throw new ParseError('Expected an indented block after "route"', t.line);
+  }
+  if (next.indent !== indent + INDENT_STEP) {
+    throw new ParseError(
+      `Invalid indentation after "route". Expected ${indent + INDENT_STEP} spaces.`,
+      next.line,
+    );
+  }
+
+  const route: RouteStatement = { type: 'Route', name, avoid: [] };
+
+  while (cur.i < lines.length) {
+    const opt = lines[cur.i]!;
+    if (opt.indent < indent + INDENT_STEP) break;
+    if (opt.indent > indent + INDENT_STEP) {
+      throw new ParseError(
+        `Unexpected indentation in route block. Expected indent ${indent + INDENT_STEP}.`,
+        opt.line,
+      );
+    }
+
+    const s = opt.text;
+
+    // from/to
+    let mm = s.match(/^from\s+(.+)$/i);
+    if (mm) {
+      const v = mm[1]!.trim();
+      const expr = parseExpression(v, opt.line);
+      if (expr.type !== 'StringLiteral') {
+        throw new ParseError('Route "from" expects a string literal.', opt.line);
+      }
+      route.from = expr.value;
+      cur.i++;
+      continue;
+    }
+
+    mm = s.match(/^to\s+(.+)$/i);
+    if (mm) {
+      const v = mm[1]!.trim();
+      const expr = parseExpression(v, opt.line);
+      if (expr.type !== 'StringLiteral') {
+        throw new ParseError('Route "to" expects a string literal.', opt.line);
+      }
+      route.to = expr.value;
+      cur.i++;
+      continue;
+    }
+
+    // prefer
+    mm = s.match(/^prefer\s+(shortest_time|shortest_distance)$/i);
+    if (mm) {
+      route.prefer = mm[1]!.toLowerCase() as RoutePrefer;
+      cur.i++;
+      continue;
+    }
+
+    // avoid <item>
+    mm = s.match(/^avoid\s+(tolls|highways|traffic)$/i);
+    if (mm) {
+      const v = mm[1]!.toLowerCase() as RouteAvoid;
+      route.avoid = Array.from(new Set([...(route.avoid ?? []), v]));
+      cur.i++;
+      continue;
+    }
+
+    // max stops <n>
+    mm = s.match(/^max\s+stops\s+(\d+)$/i);
+    if (mm) {
+      route.maxStops = Number(mm[1]);
+      cur.i++;
+      continue;
+    }
+
+    // depart at HH:MM
+    mm = s.match(/^depart\s+at\s+(\d{2}:\d{2})$/i);
+    if (mm) {
+      route.departAt = mm[1]!;
+      cur.i++;
+      continue;
+    }
+
+    // arrive before HH:MM
+    mm = s.match(/^arrive\s+before\s+(\d{2}:\d{2})$/i);
+    if (mm) {
+      route.arriveBefore = mm[1]!;
+      cur.i++;
+      continue;
+    }
+
+    throw new ParseError(`Unknown route option: "${s}"`, opt.line);
+  }
+
+  if (route.avoid && route.avoid.length === 0) delete route.avoid;
+  return route;
 }
 
 // v0.1 expression parser:

@@ -1,6 +1,6 @@
 {
   "name": "@flowlang/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "bin": {
     "flow": "dist/index.js"
@@ -8,8 +8,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@flowlang/parser": "0.1.0",
-    "@flowlang/runtime": "0.1.0"
+    "@flowlang/parser": "0.2.0",
+    "@flowlang/runtime": "0.2.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

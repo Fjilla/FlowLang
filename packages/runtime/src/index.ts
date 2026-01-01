@@ -10,31 +10,45 @@ import type {
   BinaryExpression,
 } from '@flowlang/core';
 
+export type RunResult = {
+  shows: unknown[];
+  vars: Record<string, unknown>;
+  routes: unknown[];
+};
+
 export type RuntimeEnv = {
   vars: Record<string, unknown>;
   now?: Date;
   onShow?: (value: unknown) => void;
 };
 
-export function run(program: Program, env: RuntimeEnv = { vars: {} }): void {
+export function run(program: Program, env: RuntimeEnv = { vars: {} }): RunResult {
+  const result: RunResult = {
+    shows: [],
+    vars: env.vars ?? {},
+    routes: [],
+  };
+  env.vars = result.vars;
+
   // v0.1: run all top-level "when" bodies once (no event system yet).
   for (const stmt of program.body) {
-    execStatement(stmt, env);
+    execStatement(stmt, env, result);
   }
+  return result;
 }
 
-function execStatement(stmt: Statement, env: RuntimeEnv): void {
+function execStatement(stmt: Statement, env: RuntimeEnv, result: RunResult): void {
   switch (stmt.type) {
     case 'When':
-      for (const s of stmt.body) execStatement(s, env);
+      for (const s of stmt.body) execStatement(s, env, result);
       return;
 
     case 'If': {
       const ok = truthy(evalExpression(stmt.test, env));
       if (ok) {
-        for (const s of stmt.then) execStatement(s, env);
+        for (const s of stmt.then) execStatement(s, env, result);
       } else if (stmt.else) {
-        for (const s of stmt.else) execStatement(s, env);
+        for (const s of stmt.else) execStatement(s, env, result);
       }
       return;
     }
@@ -44,8 +58,15 @@ function execStatement(stmt: Statement, env: RuntimeEnv): void {
       return;
     }
 
+    case 'Route': {
+      // v0.2: collect route plans (no optimization engine yet)
+      result.routes.push(stmt);
+      return;
+    }
+
     case 'Show': {
       const value = evalExpression(stmt.value, env);
+      result.shows.push(value);
       if (env.onShow) env.onShow(value);
       else console.log(String(value));
       return;

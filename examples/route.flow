@@ -1,0 +1,6 @@
+route delivery
+  from "Warehouse A"
+  to "Customer B"
+  prefer shortest_time
+  avoid tolls
+  max stops 6

@@ -14,6 +14,25 @@ when user logs in
     expect(program.body[0]?.type).toBe('When');
   });
 
+  it('parses a route block', () => {
+    const program = parseFlow(`
+route delivery
+  from "Warehouse A"
+  to "Customer B"
+  prefer shortest_time
+  avoid tolls
+  max stops 6
+`);
+    const route: any = program.body[0];
+    expect(route.type).toBe('Route');
+    expect(route.name).toBe('delivery');
+    expect(route.from).toBe('Warehouse A');
+    expect(route.to).toBe('Customer B');
+    expect(route.prefer).toBe('shortest_time');
+    expect(route.avoid).toEqual(['tolls']);
+    expect(route.maxStops).toBe(6);
+  });
+
   it('parses set + show identifier', () => {
     const program = parseFlow(`
 when app starts
