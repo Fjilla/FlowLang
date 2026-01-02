@@ -2,7 +2,7 @@
 
 A human-readable rule language designed for event-driven logic and automation.
 
-> **Status:** Early prototype (v0.1). Syntax and APIs may change.
+> **Status:** Early prototype (v0.2). Syntax and APIs may change.
 
 ## What is FlowLang?
 FlowLang is a small language with a focus on readability:
